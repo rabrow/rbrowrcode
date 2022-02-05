@@ -1,0 +1,126 @@
+---
+title: "Brow Final Project"
+author: "Rachel Brow"
+date: "12/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+```{r}
+library(haven)
+library(foreign)
+library(ggplot2)
+cces <- read_dta("RawData/cces18_common_vv.dta")
+```
+
+*Note: No age given, just birth year; leaving out some 29 year olds born in late November/December 1988*
+```{r}
+#limiting the dataset to 18-29 yr olds
+cces2 <- cces[which(cces$birthyr >= 1989 & cces$birthyr <= 2000),]
+table(cces2$birthyr)
+```
+
+#### Dependent and Independent Variable Coding
+```{r}
+#the dependent variable: voter turnout
+table(cces2$CC18_401)
+sum(is.na(cces2$CC18_401))
+cces2$vote = ifelse(cces2$CC18_401 == 5,1,0)
+table(cces2$vote)
+#independent variable: political social media use
+table(cces2$CC18_300d_1)
+table(cces2$CC18_300d_2)
+table(cces2$CC18_300d_3)
+table(cces2$CC18_300d_4)
+table(cces2$CC18_300d_5)
+# creating dummy variables
+cces2$Q1 = ifelse(cces2$CC18_300d_1 == 1,1,0)
+cces2$Q2 = ifelse(cces2$CC18_300d_2 == 1,1,0)
+cces2$Q3 = ifelse(cces2$CC18_300d_3 == 1,1,0)
+cces2$Q4 = ifelse(cces2$CC18_300d_4 == 1,1,0)
+cces2$Q5 = ifelse(cces2$CC18_300d_5 == 1,1,0)
+#Creates a scale from 0-5
+cces2$socmed=rowSums(cces2[ ,c(527:531)])
+table(cces2$socmed)
+```
+
+#### Barplot: Social Media Use
+```{r}
+#recoding social media use variable
+cces2$socialmedia = cces2$CC18_300_5
+cces2$socialmedia[cces2$socialmedia == 1] = 1
+cces2$socialmedia[cces2$socialmedia == 2] = 0
+#barplot for social media use
+agg=aggregate(cces2$vote~cces2$socialmedia,FUN=mean)
+barplot(ylim=c(0,0.8),agg$`cces2$vote`,main="Likelihood of Voting by Social Media Use",ylab="Proportion of respondents who voted",xlab="Social Media Use (Past 24 Hrs)",names.arg=c("No","Yes"),col=c("lightskyblue2"))
+```
+
+#### Bivariate Regression: Social Media Use
+```{r}
+baseline1 <- glm(vote~socialmedia,data=cces2,family=binomial(link="logit"))
+summary(baseline1)
+```
+
+#### Line plot: Political Social Media Use
+```{r}
+#subsetting cces2, then omitting missing values
+df3 = cces2[,c(526,532)]
+cces3 = df3[complete.cases(df3),]
+#line plot with error bars
+line <- ggplot(cces3, aes(socmed,vote))
+line + stat_summary(fun = mean, geom = "point") + stat_summary(fun = mean, geom = "line", aes(group = 1), colour = "Blue", linetype = "dashed") + stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) + labs(x = "Political Social Media Engagement (5 = High)", y = "Proportion of Respondents who Voted") + ylim(0,1) + ggtitle("Likelihood of Voting by Political Social Media Use") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+#### Bivariate Regression: Political Social Media Use
+```{r}
+baseline2 = glm(vote~socmed,data=cces2,family=binomial(link="logit"))
+summary(baseline2)
+```
+
+#### Control Variables
+```{r}
+#creating party variable
+table(cces2$pid7, useNA = "always")
+cces2$party <- NA
+cces2$party[cces2$pid7 >= 1 & cces2$pid7 <= 3] = "Democrat"
+cces2$party[cces2$pid7 == 4] = "Independent"
+cces2$party[cces2$pid7 >= 5 & cces2$pid7 <= 7] = "Republican"
+cces2$party[cces2$pid7 == 8 ] = "Not sure"
+table(cces2$party)
+```
+
+```{r}
+#creating political interest variable
+table(cces2$newsint, useNA = "always")
+cces2$polint <- NA
+cces2$polint[cces2$newsint >= 1 & cces2$newsint <= 2] = "Interested"
+cces2$polint[cces2$newsint >= 3 & cces2$newsint <= 4] = "Not Interested"
+cces2$polint[cces2$newsint == 7] = "Don't Know"
+table(cces2$polint)
+```
+
+```{r}
+#recoding gender variable
+table(cces2$gender)
+cces2$gender2 <- NA
+cces2$gender2[cces2$gender == 1] = "Male"
+cces2$gender2[cces2$gender == 2] = "Female"
+table(cces2$gender2)
+```
+
+#### Multivariate Regression: Social Media Use
+```{r}
+full1 = glm(vote~socialmedia+party+polint+gender2,data=cces2,family=binomial(link="logit"))
+summary(full1)
+```
+
+#### Multivariate Regression: Political Social Media Use
+```{r}
+full2 = glm(vote~socmed+polint+gender2,data=cces3,family=binomial(link = "logit"))
+summary(full2)
+```
