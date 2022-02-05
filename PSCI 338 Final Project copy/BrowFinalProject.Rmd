@@ -1,0 +1,219 @@
+---
+title: "Brow Final Project"
+author: "Rachel Brow"
+date: "12/9/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+```{r}
+library(haven)
+library(foreign)
+library(ggplot2)
+library(stargazer)
+cces <- read_dta("RawData/cces18_common_vv.dta")
+```
+
+*Note: No age given, just birth year; leaving out some 29 year olds born in late November/December 1988*
+```{r}
+#limiting the dataset to 18-29 yr olds
+cces2 <- cces[which(cces$birthyr >= 1989 & cces$birthyr <= 2000),]
+table(cces2$birthyr)
+```
+
+#### Dependent and Independent Variable Coding
+```{r}
+#the dependent variable: voter turnout
+table(cces2$CC18_401)
+sum(is.na(cces2$CC18_401))
+cces2$vote = ifelse(cces2$CC18_401 == 5,1,0)
+table(cces2$vote)
+#independent variable: political social media use
+table(cces2$CC18_300d_1)
+table(cces2$CC18_300d_2)
+table(cces2$CC18_300d_3)
+table(cces2$CC18_300d_4)
+table(cces2$CC18_300d_5)
+# creating dummy variables
+cces2$Q1 = ifelse(cces2$CC18_300d_1 == 1,1,0)
+cces2$Q2 = ifelse(cces2$CC18_300d_2 == 1,1,0)
+cces2$Q3 = ifelse(cces2$CC18_300d_3 == 1,1,0)
+cces2$Q4 = ifelse(cces2$CC18_300d_4 == 1,1,0)
+cces2$Q5 = ifelse(cces2$CC18_300d_5 == 1,1,0)
+#Creates a scale from 0-5
+cces2$socmed=rowSums(cces2[ ,c(527:531)])
+table(cces2$socmed)
+```
+
+#### Barplot: Social Media Use
+```{r}
+#recoding social media use variable
+cces2$socialmedia = cces2$CC18_300_5
+cces2$socialmedia[cces2$socialmedia == 1] = 1
+cces2$socialmedia[cces2$socialmedia == 2] = 0
+#barplot for social media use
+agg=aggregate(cces2$vote~cces2$socialmedia,FUN=mean)
+agg
+barplot(ylim=c(0,0.8),agg$`cces2$vote`,main="Likelihood of Voting by Social Media Use",ylab="Proportion of respondents who voted",xlab="Social Media Use (Past 24 Hrs)",names.arg=c("No","Yes"),col=c("lightskyblue2"))
+```
+
+#### Bivariate Regression: Social Media Use
+```{r,warning=F}
+baseline1 <- glm(vote~socialmedia,data=cces2,family=binomial(link="logit"))
+summary(baseline1)
+```
+
+#### Line plot: Political Social Media Use
+```{r}
+#subsetting cces2, then omitting missing values
+df3 = cces2[,c(526,532)]
+cces3 = df3[complete.cases(df3),]
+#line plot with error bars
+line <- ggplot(cces3, aes(socmed,vote))
+line + stat_summary(fun = mean, geom = "point") + stat_summary(fun = mean, geom = "line", aes(group = 1), colour = "Blue", linetype = "dashed") + stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) + labs(x = "Political Social Media Engagement (5 = High)", y = "Proportion of Respondents who Voted") + ylim(0,1) + ggtitle("Likelihood of Voting by Political Social Media Use") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+#### Bivariate Regression: Political Social Media Use
+```{r}
+baseline2 = glm(vote~socmed,data=cces2,family=binomial(link="logit"))
+summary(baseline2)
+```
+
+#### Control Variables
+```{r}
+#creating party variable as numeric
+table(cces2$pid7, useNA = "always")
+cces2$party <- NA
+cces2$party[cces2$pid7 >= 1 & cces2$pid7 <= 3] = 1
+cces2$party[cces2$pid7 == 4] = 2
+cces2$party[cces2$pid7 >= 5 & cces2$pid7 <= 7] = 3
+cces2$party[cces2$pid7 == 8 ] = 4
+table(cces2$party)
+```
+
+```{r}
+#creating political interest variable as numeric
+table(cces2$newsint, useNA = "always")
+cces2$polint <- NA
+cces2$polint[cces2$newsint >= 1 & cces2$newsint <= 2] = 1
+cces2$polint[cces2$newsint >= 3 & cces2$newsint <= 4] = 0
+cces2$polint[cces2$newsint == 7] = 2
+table(cces2$polint)
+```
+
+```{r}
+#recoding gender variable as numeric
+table(cces2$gender)
+cces2$gender2 <- NA
+cces2$gender2[cces2$gender == 1] = 1
+cces2$gender2[cces2$gender == 2] = 0
+table(cces2$gender2)
+```
+
+```{r}
+#creating condensed income categories as numeric
+table(cces2$faminc_new, useNA = "always")
+cces2$income <- NA
+cces2$income[cces2$faminc_new >= 1 & cces2$faminc_new <= 5] = 1
+cces2$income[cces2$faminc_new >= 6 & cces2$faminc_new <= 10] = 2
+cces2$income[cces2$faminc_new >= 11 & cces2$faminc_new <= 16] = 3
+cces2$income[cces2$faminc_new == 97] = 0
+```
+
+```{r}
+#creating stargazer table: Descriptive Statistics for Hypothesis 1
+cces2sub <- subset(cces2, select = c("socialmedia","vote","party","polint","gender2","income"))
+cces2sub = as.data.frame(cces2sub)
+stargazer(cces2sub,type="latex",title="Descriptive Statistics: Social Media Use and Voter Turnout", covariate.labels = c("Social Media Use","Vote","Party(1=Democrat,2=Independent,3=Republican)","Political Interest","Male","Income(3=highest,0=undisclosed)"),
+          summary.stat = c("n", "mean", "sd", "min", "max"))
+```
+
+```{r}
+#creating stargazer table: Descriptive Statistics for Hypothesis 2
+cces2sub1 <- subset(cces2, select = c("socmed","vote","party","polint","gender2","income"))
+cces2sub1 = as.data.frame(cces2sub1)
+stargazer(cces2sub1,type="latex",title="Descriptive Statistics: Political Social Media Use and Voter Turnout", covariate.labels = c("Political Social Media Use (5 = higher)","Vote","Party(1=Democrat,2=Independent,3=Republican)","Political Interest","Male", "Income(3=highest,0=undisclosed)"),
+          summary.stat = c("n", "mean", "sd", "min", "max"))
+```
+
+```{r}
+#recoding party variable as categorical
+table(cces2$pid7, useNA = "always")
+cces2$party <- NA
+cces2$party[cces2$pid7 >= 1 & cces2$pid7 <= 3] = "Democrat"
+cces2$party[cces2$pid7 == 4] = "Independent"
+cces2$party[cces2$pid7 >= 5 & cces2$pid7 <= 7] = "Republican"
+cces2$party[cces2$pid7 == 8 ] = "Not sure"
+table(cces2$party)
+```
+
+```{r}
+#recoding polint variable as categorical
+table(cces2$newsint, useNA = "always")
+cces2$polint <- NA
+cces2$polint[cces2$newsint >= 1 & cces2$newsint <= 2] = "Interested"
+cces2$polint[cces2$newsint >= 3 & cces2$newsint <= 4] = "Not Interested"
+cces2$polint[cces2$newsint == 7] = "Not sure"
+table(cces2$polint)
+```
+
+```{r}
+#recoding income variable as categorical
+table(cces2$faminc_new, useNA = "always")
+cces2$income <- NA
+cces2$income[cces2$faminc_new >= 1 & cces2$faminc_new <= 5] = "1.Low Income"
+cces2$income[cces2$faminc_new >= 6 & cces2$faminc_new <= 10] = "2.Middle Income"
+cces2$income[cces2$faminc_new >= 11 & cces2$faminc_new <= 16] = "3.High Income"
+cces2$income[cces2$faminc_new == 97] = "Undisclosed Income"
+table(cces2$income)
+```
+
+#### Multivariate Regression: Social Media Use
+```{r}
+full1 = glm(vote~socialmedia+party+polint+gender2+income,data=cces2,family=binomial(link="logit"))
+summary(full1)
+#latex graph
+stargazer(baseline1, full1, type = "latex", title= "Bivariate and Multivariate Regressions for Hypothesis 1", covariate.labels = c("Social Media Use", "Independent","No Party ID","Republican","Not Interested in Politics","Political Interest: Not Sure", "Male","Middle Income","High Income","Undisclosed Income", "Constant"),
+          dep.var.labels.include = TRUE, dep.var.caption = "Voter Turnout", column.labels = c("Bivariate", "Multivariate"), column.separate = c(1, 1))
+#odds ratios table
+stargazer2 <- function(model, odd.ratio = F, ...) {
+  if(!("list" %in% class(model))) model <- list(model)
+    
+  if (odd.ratio) {
+    coefOR2 <- lapply(model, function(x) exp(coef(x)))
+    seOR2 <- lapply(model, function(x) exp(coef(x)) * summary(x)$coef[, 2])
+    p2 <- lapply(model, function(x) summary(x)$coefficients[, 4])
+    stargazer(model, coef = coefOR2, se = seOR2, p = p2, ...)
+    
+  } else {
+    stargazer(model, ...)
+  }
+}
+stargazer2(full1, odd.ratio = T, type = "latex", title= "Odds Ratios Table for Hypothesis 1", covariate.labels = c("Social Media Use", "Independent","No Party ID","Republican","Not Interested in Politics","Political Interest: Not Sure", "Male","Middle Income","High Income","Undisclosed Income", "Constant"),
+          dep.var.labels.include = TRUE, dep.var.caption = "Voter Turnout", column.labels = "Odds Ratios")
+```
+
+#### Multivariate Regression: Political Social Media Use
+```{r}
+full2 = glm(vote~socmed+party+polint+gender2+income,data=cces2,family=binomial(link = "logit"))
+summary(full2)
+#latex graph
+stargazer(baseline2, full2, type = "latex", title= "Bivariate and Multivariate Regressions for Hypothesis 2", covariate.labels = c("Political Social Media Use", "Independent","No Party ID","Republican","Not Interested in Politics","Political Interest: Not Sure", "Male","Middle Income","High Income","Undisclosed Income", "Constant"),
+          dep.var.labels.include = TRUE, dep.var.caption = "Voter Turnout", column.labels = c("Bivariate", "Multivariate"), column.separate = c(1, 1))
+#odds ratios table
+stargazer2(full2, odd.ratio = T, type = "latex", title= "Odds Ratios Table for Hypothesis 1", covariate.labels = c("Political Social Media Use", "Independent","No Party ID","Republican","Not Interested in Politics","Political Interest: Not Sure", "Male","Middle Income","High Income","Undisclosed Income", "Constant"),
+          dep.var.labels.include = TRUE, dep.var.caption = "Voter Turnout", column.labels = "Odds Ratios")
+```
+
+#### Confidence Intervals
+```{r}
+confint(full1)
+confint(full2)
+```
