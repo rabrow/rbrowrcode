@@ -1,0 +1,103 @@
+---
+title: "Midterm Data Analysis Project"
+author: "Rachel Brow"
+date: "10/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+```{r}
+library("foreign")
+library(car)
+library(stargazer)
+Kaiser <- read.dta("RawData/31117492.DTA",convert.factors = TRUE)
+Kaiser2 <- Kaiser[which(Kaiser$party=='Republican' | Kaiser$party=='Democrat'),]
+#omitting "Don't know" for Q18C & Q18D
+which(Kaiser2$Q18C == "Don't know")
+Kaiser2 = Kaiser2[-438,]
+which(Kaiser2$Q18D == "Don't know")
+Kaiser2 = Kaiser2[-163,]
+#omitting "Don't know" and "Refused" for race
+which(Kaiser2$race == "Don't Know")
+Kaiser2 = Kaiser2[-c(86,671),]
+which(Kaiser2$race == "Refused")
+Kaiser2 = Kaiser2[-c(128,192,354,518,646),]
+table(Kaiser2$race)
+```
+
+```{r}
+#Question 18: the dependent variable
+table(Kaiser2$Q18A)
+table(Kaiser2$Q18B)
+table(Kaiser2$Q18C)
+table(Kaiser2$Q18D)
+table(Kaiser2$Q18E)
+# as.numeric
+Kaiser2$Q18A.num=as.numeric(Kaiser2$Q18A)
+Kaiser2$Q18B.num=as.numeric(Kaiser2$Q18B)
+Kaiser2$Q18C.num=as.numeric(Kaiser2$Q18C)
+Kaiser2$Q18D.num=as.numeric(Kaiser2$Q18D)
+Kaiser2$Q18E.num=as.numeric(Kaiser2$Q18E)
+# Creating a dummy variable, "Not at all" = 4
+Kaiser2$Q18A.num=ifelse(Kaiser2$Q18A.num==4,1,0)
+Kaiser2$Q18B.num=ifelse(Kaiser2$Q18B.num==4,1,0)
+Kaiser2$Q18C.num=ifelse(Kaiser2$Q18C.num==4,1,0)
+Kaiser2$Q18D.num=ifelse(Kaiser2$Q18D.num==4,1,0)
+Kaiser2$Q18E.num=ifelse(Kaiser2$Q18E.num==4,1,0)
+#Creates a scale from 0-5, 5 being the highest social distancing behavior
+Kaiser2$socdist=rowSums(Kaiser2[ ,c(207:211)])
+table(Kaiser2$socdist)
+```
+
+```{r}
+#Partisanship, excluding Ind. or Other: the independent variable
+Kaiser2$partisan <- as.numeric(Kaiser2$party)
+Kaiser2$partisan = ifelse(Kaiser2$partisan==1,1,0)
+#barplot
+agg=aggregate(Kaiser2$socdist~Kaiser2$partisan,FUN=mean)
+barplot(agg$`Kaiser2$socdist`,main="Social Distancing by Partisanship",ylab="aggregate soc. dist. behavior (higher=more soc. dist.)",names.arg=c("Democrat","Republican"))
+summary(lm(socdist~partisan,data=Kaiser2))
+```
+
+```{r}
+#Controlling for age, using age categories 18-29, 30-49, 50-64, 65-79, and 80+
+Kaiser2$agecat <- NA
+Kaiser2$agecat[Kaiser2$age >= 18 & Kaiser2$age <= 29] = 1
+Kaiser2$agecat[Kaiser2$age >= 30 & Kaiser2$age <= 49] = 2
+Kaiser2$agecat[Kaiser2$age >= 50 & Kaiser2$age <= 64] = 3
+Kaiser2$agecat[Kaiser2$age >= 65 & Kaiser2$age <= 79] = 4
+Kaiser2$agecat[Kaiser2$age >= 80] = 5
+#Controlling for personal connection with COVID
+table(Kaiser2$TEST4)
+Kaiser2$personal = ifelse(Kaiser2$TEST4=='Yes',1,0)
+#Controlling for race
+table(Kaiser2$race)
+Kaiser2$race2 <- NA
+Kaiser2$race2[Kaiser2$race == 'White'] = 0
+Kaiser2$race2[Kaiser2$race == 'Black or African-American'] = 1
+Kaiser2$race2[Kaiser2$race == 'Asian'] = 1
+Kaiser2$race2[Kaiser2$race == 'Other or mixed race'] = 1
+Kaiser2$race2[Kaiser2$race == "Don't Know"] = NA
+Kaiser2$race2[Kaiser2$race == 'Refused'] = NA
+#Summarizing my lm with control variables
+summary(lm(socdist~partisan+agecat+personal+race2,data=Kaiser2))
+```
+
+```{r}
+#Creating a stargazer table: Descriptive Statistics
+Kaiser2sub <- subset(Kaiser2, select = c(partisan,socdist,agecat,personal,race2))
+stargazer(Kaiser2sub, type="latex",title="Descriptive Statistics: Partisanship and Social Distancing", covariate.labels = c("Republican","Social Distancing (higher = more soc. dist.)","Age Category (1 = 18-29, 5 = 80+)","Personal Connection to COVID","Minority"),
+          summary.stat = c("n", "mean", "sd", "min", "max"))
+```
+
+```{r}
+# Creating another stargazer table: Regression Analysis
+baseline <- lm(socdist~partisan,data=Kaiser2sub)
+full <- lm(socdist~partisan+agecat+personal+race2,data=Kaiser2sub)
+vars.name <- c("Constant","Partisanship","Age Category","Personal","Race")
+stargazer(baseline, full, type = "latex", title= "Correlates of Social Distancing Behavior (higher = more soc. dist.)", covariate.labels = vars.name,
+          dep.var.labels.include = FALSE, dep.var.caption = "", column.labels = c("Bivariate", "Control"), column.separate = c(1, 1))
+```

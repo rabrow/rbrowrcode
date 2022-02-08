@@ -1,0 +1,28 @@
+---
+title: 'Quiz #6'
+author: "Rachel Brow"
+date: "10/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+```{r}
+library(foreign)
+library(car)
+library(stargazer)
+alpl <- read.dta("RawData/alpl2013.dta")
+```
+#### Question #1
+```{r}
+alpl_subset <- subset(alpl, 
+                         select=c("tech", "male", "eval_voting"))
+
+stargazer(alpl_subset, type="text",title="Descriptive Statistics: E-Voting in Salta, Argentina",
+          covariate.labels = c("No. of Technology Devices (1-6)",
+                               "Sex (Male=1, Female=0)",
+                               "Positive Experience Voting"),
+          summary.stat = c("n","min","median","max"))
+```

@@ -1,0 +1,52 @@
+---
+title: 'Quiz #5'
+author: "Rachel Brow"
+date: "10/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+
+#### Question #1
+```{r}
+library("foreign")
+Kaiser <- read.dta("RawData/31117492.DTA",convert.factors = TRUE)
+```
+
+```{r}
+library(car)
+Kaiser$sex <- recode(Kaiser$rsex, "'Male'='male';'Female'='female';'Other (VOL.)'='other';'Refused'='other'")
+table(Kaiser$sex)
+```
+
+```{r}
+#abstain variable
+library("foreign")
+Kaiser <- read.dta("RawData/31117492.DTA",convert.factors = TRUE)
+# as.numeric
+Kaiser$Q18A.num=as.numeric(Kaiser$Q18A)
+Kaiser$Q18B.num=as.numeric(Kaiser$Q18B)
+Kaiser$Q18C.num=as.numeric(Kaiser$Q18C)
+Kaiser$Q18D.num=as.numeric(Kaiser$Q18D)
+Kaiser$Q18E.num=as.numeric(Kaiser$Q18E)
+# Not at all = 4
+Kaiser$Q18A.num=ifelse(Kaiser$Q18A.num==4,1,0)
+Kaiser$Q18B.num=ifelse(Kaiser$Q18B.num==4,1,0)
+Kaiser$Q18C.num=ifelse(Kaiser$Q18C.num==4,1,0)
+Kaiser$Q18D.num=ifelse(Kaiser$Q18D.num==4,1,0)
+Kaiser$Q18E.num=ifelse(Kaiser$Q18E.num==4,1,0)
+Kaiser$abstain=rowSums(Kaiser[ ,c(207:211)])
+```
+
+```{r}
+library(car)
+Kaiser$rsex = gsub("Don't Know", "Dont Know", Kaiser$rsex)
+Kaiser$sex <- recode(Kaiser$rsex, "'Male'='male';'Female'='female';'Other (VOL.)'='other';'Refused'='other'")
+# barplot
+agg=aggregate(Kaiser$abstain~Kaiser$sex,FUN=mean)
+barplot(agg$`Kaiser$abstain`,main="Average Number of Abstained Activities by Sex",names.arg=c("Male", "Female", "Other"))
+box()
+```

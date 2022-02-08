@@ -1,0 +1,94 @@
+---
+title: 'Problem Set #5'
+author: "Rachel Brow"
+date: "10/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+#### #1
+##### a.
+```{r}
+library("foreign")
+Kaiser <- read.dta("RawData/31117492.DTA",convert.factors = TRUE)
+```
+
+##### b.
+```{r}
+head(Kaiser,5)
+```
+
+##### c.
+``` {r}
+str(Kaiser$party)
+str(Kaiser$partylea)
+str(Kaiser$Q18A)
+str(Kaiser$Q18B)
+str(Kaiser$Q18C)
+str(Kaiser$Q18D)
+str(Kaiser$Q18E)
+```
+
+##### d.
+```{r}
+library(car)
+Kaiser$party = gsub("Don't Know", "Dont Know", Kaiser$party)
+Kaiser$partisan <- recode(Kaiser$party,"'Republican'='R';'Democrat'='D';'Independent'='I';'Or what?'='O';'Refused'='O';'Dont Know'='O'")
+table(Kaiser$partisan)
+```
+
+##### e.
+```{r}
+library("foreign")
+Kaiser <- read.dta("RawData/31117492.DTA",convert.factors = TRUE)
+# as.numeric
+Kaiser$Q18A.num=as.numeric(Kaiser$Q18A)
+Kaiser$Q18B.num=as.numeric(Kaiser$Q18B)
+Kaiser$Q18C.num=as.numeric(Kaiser$Q18C)
+Kaiser$Q18D.num=as.numeric(Kaiser$Q18D)
+Kaiser$Q18E.num=as.numeric(Kaiser$Q18E)
+# Not at all = 4
+Kaiser$Q18A.num=ifelse(Kaiser$Q18A.num==4,1,0)
+Kaiser$Q18B.num=ifelse(Kaiser$Q18B.num==4,1,0)
+Kaiser$Q18C.num=ifelse(Kaiser$Q18C.num==4,1,0)
+Kaiser$Q18D.num=ifelse(Kaiser$Q18D.num==4,1,0)
+Kaiser$Q18E.num=ifelse(Kaiser$Q18E.num==4,1,0)
+Kaiser$abstain=rowSums(Kaiser[ ,c(207:211)])
+```
+
+##### f.
+```{r}
+library(car)
+Kaiser$party = gsub("Don't Know", "Dont Know", Kaiser$party)
+Kaiser$partisan <- recode(Kaiser$party,"'Republican'='R';'Democrat'='D';'Independent'='I';'Or what?'='O';'Refused'='O';'Dont Know'='O'")
+agg=aggregate(Kaiser$abstain~Kaiser$partisan,FUN=mean)
+barplot(agg$`Kaiser$abstain`,main="Abstaining Activities by Partisanship",names.arg=c("Dem", "Ind", "Other","Rep"))
+box()
+```
+
+#### #2
+##### a.
+```{r}
+pnorm(30,26,sqrt(54))-pnorm(24,26,sqrt(54))
+```
+
+##### b.
+```{r}
+pnorm(40,45,sqrt(23))+(1-pnorm(50,45,sqrt(23)))
+```
+
+##### c.
+```{r}
+1-pnorm(0,-5,sqrt(7))
+```
+
+##### d.
+```{r}
+pnorm(1.5,0,1)
+```
+
+#### #3
+See Recitation5.Rmd

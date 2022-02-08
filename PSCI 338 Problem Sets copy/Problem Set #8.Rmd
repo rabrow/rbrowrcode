@@ -1,0 +1,103 @@
+---
+title: 'Problem Set #8'
+author: "Rachel Brow"
+date: "11/4/2020"
+output: html_document
+---
+
+```{r setup}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+### #1
+```{r}
+library("foreign")
+library(car)
+Kaiser <- read.dta("RawData/31117492.DTA",convert.factors = TRUE)
+```
+
+##### a.
+```{r}
+Kaiser$presapp <- NA
+Kaiser$presapp[Kaiser$trumpapp == "Strongly approve"] = 1
+Kaiser$presapp[Kaiser$trumpapp == "Somewhat approve"] = 1
+Kaiser$presapp[Kaiser$trumpapp == "Somewhat disapprove"] = 0
+Kaiser$presapp[Kaiser$trumpapp == "Strongly disapprove"] = 0
+Kaiser$presapp[Kaiser$trumpapp == "Don't know"] = NA
+Kaiser$presapp[Kaiser$trumpapp == "Refused"] = NA
+```
+
+##### b.
+```{r}
+linMod <- lm(presapp~rsex+RECAGE5+racethn,data=Kaiser)
+summary(linMod)
+```
+
+##### c.
+```{r}
+library(lmtest)
+library(sandwich)
+coeftest(linMod, vcov = vcovHC(linMod, type="HC1"))
+```
+
+### #2.
+```{r}
+#Respondent's sex
+linMod1 <- lm(presapp~rsex,data=Kaiser)
+##Female
+Kaiser$rsex.num <- as.numeric(Kaiser$rsex)
+newdata1 = Kaiser[which(Kaiser$rsex.num == 2), ]
+fit1 = predict(linMod1, newdata = newdata1)
+summary(fit1)[4]
+#Age bin
+linMod2 <- lm(presapp~RECAGE5,data=Kaiser)
+##45-64
+Kaiser$RECAGE5.num <- as.numeric(Kaiser$RECAGE5)
+newdata2 = Kaiser[which(Kaiser$RECAGE5.num == 3), ]
+fit2 = predict(linMod2, newdata = newdata2)
+summary(fit2)[4]
+##65+
+newdata3 = Kaiser[which(Kaiser$RECAGE5.num == 4), ]
+fit3 = predict(linMod2, newdata = newdata3)
+summary(fit3)[4]
+#Race/ethnicity
+linMod3 <- lm(presapp~racethn,data=Kaiser)
+## BLACK, NON-HISPANIC
+Kaiser$racethn.num <- as.numeric(Kaiser$racethn)
+newdata4 = Kaiser[which(Kaiser$racethn.num == 2), ]
+fit4 = predict(linMod3, newdata = newdata4)
+summary(fit4)[4]
+```
+
+### #3
+##### a.
+```{r}
+table(Kaiser$Q18A)
+Kaiser$abstainA <- 0
+Kaiser$abstainA[Kaiser$Q18A == "Not at all"] <- 1
+table(Kaiser$Q18B)
+Kaiser$abstainB <- 0
+Kaiser$abstainB[Kaiser$Q18B == "Not at all"] <- 1
+table(Kaiser$Q18C)
+Kaiser$abstainC <- 0
+Kaiser$abstainC[Kaiser$Q18C == "Not at all"] <- 1
+table(Kaiser$Q18D)
+Kaiser$abstainD <- 0
+Kaiser$abstainD[Kaiser$Q18D == "Not at all"] <- 1
+table(Kaiser$Q18E)
+Kaiser$abstainE <- 0
+Kaiser$abstainE[Kaiser$Q18E == "Not at all"] <- 1
+# Total number of responses of not at all
+Kaiser$abstainTOT <- Kaiser$abstainA + Kaiser$abstainB + Kaiser$abstainC + Kaiser$abstainD + Kaiser$abstainE
+```
+
+##### b.
+```{r}
+linMod_ <- lm(abstainTOT~STATE_GO+PARTY3+rsex,data=Kaiser)
+summary(linMod_)
+```
+
+##### c.
+```{r}
+coeftest(linMod_, vcov = vcovCL(linMod_,cluster = Kaiser$STATE_GO, type="HC1"))
+```

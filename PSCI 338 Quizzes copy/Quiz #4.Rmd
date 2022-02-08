@@ -1,0 +1,28 @@
+---
+title: 'Quiz #4'
+author: "Rachel Brow"
+date: "9/26/2020"
+output: html_document
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+#### Question #1
+```{r}
+pr_male <- 20559/45242
+pr_fem <- 24683/45242
+pr_trump_male <-.46
+pr_clinton_male <- .44
+pr_unsure_male <- .1
+pr_trump_fem <- .53
+pr_clinton_fem <- .38
+pr_unsure_fem <- .09
+# P(male | Trump):
+pr_male_and_trump <- pr_trump_male * pr_male
+pr_trump <- pr_male_and_trump + (pr_trump_fem * pr_fem)
+pr_male_trump <- pr_male_and_trump/pr_trump
+print(pr_male_trump)
+```
+There is a 41.96% probability that a Trump supporter was male. 

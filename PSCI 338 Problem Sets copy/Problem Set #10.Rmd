@@ -1,0 +1,59 @@
+---
+title: 'Problem Set #10'
+author: "Rachel Brow"
+date: "11/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+#### #1
+```{r}
+library(lmtest)
+library(sandwich)
+library(gmodels)
+library(biostat3)
+library(car)
+load("RawData/ETOV2006.rdata")
+```
+
+#### #2
+```{r}
+CrossTable(y=ETOV2006$p2006,x=ETOV2006$treatment_chk2,prop.c=F,prop.t=F,prop.chisq=F,chisq=T,format="SPSS")
+```
+
+#### #3
+```{r}
+linMod <- lm(p2006~treatment_chk2,data=ETOV2006)
+summary(linMod)
+coeftest(linMod, vcov = vcovHC(linMod, type="HC1"))
+```
+The probability of committing Type 1 error if rejecting the null hypothesis that that someone who receives the Civic Duty mailing is just as likely to vote as someone in the Control is p-value 3.43e-12. Therefore, the estimate is significant.
+
+#### #4
+```{r}
+lincom(linMod, c("(Intercept)","treatment_chk2 Civic Duty","treatment_chk2 Hawthorne","treatment_chk2 Self","treatment_chk2 Neighbors"),
+       vcov = vcovHC(linMod, type="HC1"),level = 0.99)
+```
+
+#### #5
+
+##### a.
+```{r}
+linearHypothesis(linMod,"treatment_chk2 Hawthorne = 0.01862285", 
+                 white.adjust = TRUE)
+```
+
+##### b.
+```{r}
+linearHypothesis(linMod, "treatment_chk2 Self = 0.02524811", 
+                 white.adjust = TRUE)
+```
+
+##### c.
+```{r}
+linearHypothesis(linMod, "treatment_chk2 Neighbors = 0.04949499", 
+                 white.adjust = TRUE)
+```

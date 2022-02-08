@@ -1,0 +1,54 @@
+---
+title: 'Problem Set #6'
+author: "Rachel Brow"
+date: "10/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+```{r}
+library(foreign)
+alpl <- read.dta("RawData/alpl2013.dta")
+```
+
+#### Question #1
+##### a.
+```{r}
+linMod <- lm(alpl$tech~alpl$male,alpl)
+summary(linMod)
+confint(linMod, level = .80)
+```
+
+##### b.
+```{r}
+linMod2 <- lm(alpl$eval_voting~alpl$EV)
+confint(linMod2, level = .99)
+```
+
+#### Question #2
+```{r}
+library(car)
+library(stargazer)
+stargazer(alpl, type="text",title="Descriptive Statistics: E-Voting in Salta, Argentina",
+          covariate.labels = c("E-Voting",
+                               "Age",
+                               "Education",
+                               "Male",
+                               "Technology Devices (1-6)",
+                               "Political Knowledge",
+                               "White Collar Worker",
+                               "Non-Full Time Worker",
+                               "Capable Poll Workers",
+                               "Positive Experience",
+                               "Easy Experience",
+                               "Confidence in Vote Count",
+                               "Confidence of Vote Secrecy",
+                               "Clean Elections",
+                               "Speedy Process",
+                               "Agree with E-Voting",
+                               "Electronic Selection"),
+          summary.stat = c("n", "mean", "sd", "min", "p25", "median", "p75", "max"))
+```

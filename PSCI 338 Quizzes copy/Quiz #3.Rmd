@@ -1,0 +1,36 @@
+---
+title: 'Quiz #3'
+author: "Rachel Brow"
+date: "9/19/2020"
+output: html_document
+---
+
+#### #1
+```{r}
+drugCoverage <- read.csv("RawData/drugCoverage.csv")
+```
+
+#### #2
+```{r}
+drugCoverage$highapp <- ifelse(drugCoverage$approval>50,1,0)
+drugCoverage$highapp[1:20]
+# The values of 1 are when presidential approval is above 50%; 0 is when approval is 50% or below.
+```
+
+
+#### #3
+```{r}
+mean(drugCoverage$drugsmedia[drugCoverage$highapp==1])
+median(drugCoverage$drugsmedia[drugCoverage$highapp==1])
+table(drugCoverage$drugsmedia[drugCoverage$highapp==1])
+which.max(table(drugCoverage$drugsmedia[drugCoverage$highapp==1]))
+# The mean is 24.33028, median is 17, and mode is 5 when presidential approval is above 50%.
+```
+
+```{r}
+mean(drugCoverage$drugsmedia[drugCoverage$highapp==0])
+median(drugCoverage$drugsmedia[drugCoverage$highapp==0])
+table(drugCoverage$drugsmedia[drugCoverage$highapp==0])
+which.max(table(drugCoverage$drugsmedia[drugCoverage$highapp==0]))
+# The mean is 15.55422, the median is 12, and the mode is 8 when the presidential approval is 50% or below.
+```

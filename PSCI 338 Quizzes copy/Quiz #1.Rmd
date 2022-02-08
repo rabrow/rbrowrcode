@@ -1,0 +1,15 @@
+---
+title: 'Quiz #1'
+author: "Rachel Brow"
+date: "9/7/2020"
+output: html_document
+---
+
+#### Question 1
+```{r, echo=FALSE}
+round((2+sqrt(pi))/(3^2),4)
+```
+#### Question 2
+```{r, echo=FALSE}
+round(rnorm(7),3)
+```

@@ -1,0 +1,139 @@
+---
+title: 'Problem Set #4'
+author: "Rachel Brow"
+date: "9/26/2020"
+output: html_document
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+#### Question #1
+
+##### a.
+```{r}
+# Probability of rolling any number on dice 1:
+pr_dice1 <- 1/13
+# Probability of rolling any number on dice 2:
+pr_dice2 <- 1/13
+# Probability of rolling a pair of 1's on dice 1 and dice 2:
+pr_1 <- pr_dice1 * pr_dice2
+# Probability of rolling two dice of the same number:
+13 * pr_1
+```
+
+##### b.
+```{r}
+pr_eleven2 <- 9 * pr_1
+9 * pr_1
+```
+
+##### c.
+```{r}
+pr_ten2 <- 1-pr_eleven2
+1-pr_eleven2
+```
+
+##### d.
+```{r}
+pr_eleven1 <- 3 * pr_dice1
+pr_ten1 <- 10 * pr_dice2
+pr_eleven1 * pr_ten1
+```
+
+#### Question #2
+
+##### a.
+```{r}
+1 * 3/51
+```
+
+##### b.
+```{r}
+pr_facecard1 <- 12/52
+pr_facecard2 <- 11/51
+pr_facecard1 * pr_facecard2
+```
+
+##### c.
+```{r}
+round((1-pr_facecard1) * (39/51),3)
+```
+
+##### d.
+```{r}
+pr_facecard1 * (40/51)
+```
+
+#### Question #3
+Question 1 was dealing with two independent events (rolling dice), whereas Question 2 was dealing with 2 dependent events (drawing cards from a deck). In Question 2, the probability of drawing the second card depends on the probability of drawing the first.
+
+#### Question #4
+
+```{r}
+pr_blue_box1 <- 3/5
+pr_blue_box2 <- 2/7
+pr_box1=pr_box2=1/2
+pr_blue_and_box1 <- pr_blue_box1 * pr_box1
+pr_blue_and_box2 <- pr_blue_box2 * pr_box2
+pr_blue <- pr_blue_and_box1 + pr_blue_and_box2
+# Probability that the coin came up heads given that she chose blue
+pr_box1_blue <- pr_blue_and_box1/pr_blue
+print(pr_box1_blue)
+```
+
+#### Question #5
+
+```{r}
+pr_tails <- 1/3
+pr_heads <- 1/2
+pr_tails_and_heads<- pr_tails * pr_heads
+# Probability that the other side of a coin is tails given heads
+pr_tails_heads <- pr_tails_and_heads/pr_heads
+print(pr_tails_heads)
+```
+
+#### Question #6
+Suppose that we ran a political poll that surveyed people in Massachusetts, Pennsylvania, and Texas. We got 300 responses from Texas, 200 responses from Pennsylvania, and 100 responses from Massachusetts. In Texas, 2/5 of the respondents identified as Democrats. In Pennsylvania, 1/2 of the respondents identified as Democrats. In Massachusetts, 3/5 of the respondents identified as Democrats. What is the probability thata respondent is from Texas given that he or she identified as a Democrat?
+```{r}
+# Given information:
+pr_tx <- 1/2
+pr_dem_tx <- 2/5
+pr_pa <- 1/3
+pr_dem_pa <- 1/2
+pr_ma <- 1/6
+pr_dem_ma <- 3/5
+# Probability of Texas given a Democrat:
+pr_tx_and_dem <- pr_tx * pr_dem_tx
+pr_dem_and_nottx <- (pr_pa * pr_dem_pa) + (pr_ma * pr_dem_ma)
+pr_dem <- pr_tx_and_dem + pr_dem_and_nottx
+pr_tx_dem <- pr_tx_and_dem/pr_dem
+print(pr_tx_dem)
+```
+
+#### Question #7
+
+```{r} 
+D <- 0.03
+ND <- 0.97
+positiveD <- 0.95
+negativeD <- 0.05
+positiveND <- 0.0015
+negativeND <- 0.9995
+# Calculate P(Disease|positive)
+print((positiveD*D)/((positiveD*D)+(positiveND*ND)))
+```
+
+#### Question #8
+
+```{r}
+D <- 0.021
+ND <- 0.989
+positiveD <- 0.95
+negativeD <- 0.05
+positiveND <- 0.02
+negativeND <- 0.98
+# Calculate P(Disease|positive)
+(positiveD*D)/((positiveD*D)+(positiveND*ND))
+```

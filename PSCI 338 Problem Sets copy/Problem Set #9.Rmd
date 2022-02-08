@@ -1,0 +1,109 @@
+---
+title: 'Problem Set #9'
+author: "Rachel Brow"
+date: "11/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+### Question #1
+
+#### a.
+1) Political ideology is possibly the most important control, because ideology is known to have a significant association with presidential approval; for instance, a liberal will probably approve of a liberal Democrat president. Also, ideology may have an association with cat/dog preference due to different personality traits which prefer one pet over the other.
+2) Urbanity could be an important control, because living in a city (which are generally more Democrat) versus the country (more Republican) could affect presidential approval. Also, the amount of living space could be associated with preferring cats or dogs.
+3) Income could be an important control, because how much money someone makes could be associated with presidential approval. For instance, if someone is low-income, they may be more likely to support liberal policies. Also, the maintenance of one pet might be more expensive than the other, so income might be associated with cat/dog preference.
+4) Sex could be an important control, because females are more likely to support liberal policies than males; thus, this could affect presidential approval. Also, differing predominant personality traits between the sexes could be associated with cat/dog preference.
+5) Age could be an important control, because younger people are generally more liberal/Democrat than older people, which could affect Obama presidential approval. Also, an older age, for instance, could be associated with one pet over the other.
+
+#### b.
+```{r}
+library(haven)
+library(lmtest)
+library(sandwich)
+cbs <- read_spss("RawData/cbs201103c.por")
+```
+
+```{r}
+#Coding Obama approval
+cbs$obamapp <- NA
+cbs$obamapp[cbs$Q1 == 1] = 1
+cbs$obamapp[cbs$Q1 == 2] = 0
+cbs$obamapp[cbs$Q1 == 9] = NA
+```
+
+```{r}
+#Creating cat preference dummy variable
+cbs$cat <- NA
+cbs$cat[cbs$Q24 == 2] = 1
+cbs$cat[cbs$Q24 == 1] = 0
+cbs$cat[cbs$Q24 == 9] = NA
+```
+
+```{r}
+linMod <- lm(obamapp~cat,na.action=na.exclude,data=cbs,weights = WGHT)
+summary(linMod)
+coeftest(linMod, vcov = vcovHC(linMod, type="HC1"))
+```
+
+```{r}
+#Recoding Political Ideology
+table(cbs$PPHL)
+cbs$ideol <- NA
+cbs$ideol[cbs$PPHL == 1] = "Liberal"
+cbs$ideol[cbs$PPHL == 2] = "Moderate"
+cbs$ideol[cbs$PPHL == 3] = "Conservative"
+```
+
+```{r}
+#Recoding urbanity
+cbs$urban <- NA
+cbs$urban[cbs$URBN <= 2] = "City"
+cbs$urban[cbs$URBN == 3] = "Suburbs"
+cbs$urban[cbs$URBN == 4] = "Other"
+cbs$urban[cbs$URBN == 5] = "Rural"
+```
+
+```{r}
+#Recoding income
+cbs$income <- NA
+cbs$income[cbs$INCA <= 2] = "0 to 30,000"
+cbs$income[cbs$INCA > 2 & cbs$INCA <= 4] = "30,000 to 75,000"
+cbs$income[cbs$INCA == 5] = "75,000+"
+```
+
+```{r}
+#Creating Age dummies
+table(cbs$AGEA)
+cbs$age3044 <- 0
+cbs$age3044[cbs$AGEA == 2] <- 1
+cbs$age3044[cbs$AGEA == 9] <- NA
+table(cbs$age3044)
+cbs$age4564 <- 0
+cbs$age4564[cbs$AGEA == 3] <- 1
+cbs$age4564[cbs$AGEA == 9] <- NA
+table(cbs$age4564)
+cbs$age64 <- 0
+cbs$age64[cbs$AGEA == 4] <- 1
+cbs$age3044[cbs$AGEA == 9] <- NA
+table(cbs$age64)
+```
+
+```{r}
+#Recoding sex
+cbs$sex <- NA
+cbs$sex[cbs$SEX == 2] = "Female"
+cbs$sex[cbs$SEX == 1] = "Male"
+```
+
+```{r}
+linMod2 <- lm(obamapp~cat+ideol+urban+income+sex+age3044+age4564+age64,na.action=na.exclude,data=cbs,weights = WGHT)
+summary(linMod2)
+coeftest(linMod2, vcov = vcovHC(linMod2, type="HC1"))
+```
+There is still a slight positive association between preferring cats and Obama presidential approval, although it is no longer significant. As I expected, the control with the highest significance was political ideology.
+
+#### c.
+Ideally, I would also control for some type of personality trait indicator. Some controls which I used to associate with cat or dog preference, such as ideology, are more of a proxy variable with the underlying variable of personality in mind. For instance, introverted people are more likely to prefer cats than dogs, and introverted people are more likely to be open-minded/liberal. Perhaps a simple categorization of "extrovert" or "introvert" could be a helpful control. 

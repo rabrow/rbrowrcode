@@ -1,0 +1,36 @@
+---
+title: 'Quiz #9'
+author: "Rachel Brow"
+date: "12/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+```{r}
+library(lmtest)
+library(sandwich)
+library(gmodels)
+library(biostat3)
+library(car)
+load("RawData/ETOV2006.rdata")
+```
+
+#### #1
+```{r}
+linMod <- lm(g2006~treatment_chk2,data=ETOV2006)
+coeftest(linMod, vcov = vcovHC(linMod, type="HC1"))
+#90% Confidence Interval
+lincom(linMod, c("(Intercept)","treatment_chk2 Self"),
+       vcov = vcovHC(linMod, type="HC1"),level = 0.90)
+```
+
+#### #2
+
+The probability of committing Type 1 error if rejecting the null hypothesis that someone who receives the "self mailing" is just as likely to vote as someone in the Control is 31.20%. Therefore, the estimate is not significant.
+
+#### #3
+
+Reporting this p-value does not take into account the fact that multiple comparisons will increase the probability of making a Type 1 error; to correct for this, you need to lower the alpha.

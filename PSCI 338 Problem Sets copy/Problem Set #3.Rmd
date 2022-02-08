@@ -1,0 +1,89 @@
+---
+title: 'Problem Set #3'
+author: "Rachel Brow"
+date: "9/18/2020"
+output: html_document
+---
+
+```{r}
+library(base)
+drugCoverage <- read.csv("RawData/drugCoverage.csv")
+```
+
+#### #1
+```{r}
+hist(drugCoverage$drugsmedia,xlab = "Drug-Related Stories",main = "Monthly Count of Drug-Related Television News Stories, 1977 to 1992")
+abline(h=0,col="gray60")
+box()
+```
+
+#### #2
+```{r}
+drugCoverage$Year.pres <- c(rep("Carter",48),rep("Reagan",96),rep("Bush",48))
+```
+
+#### #3
+```{r}
+boxplot(drugCoverage$drugsmedia~drugCoverage$Year.pres,axes=F,ylab="Drug-Related Stories",xlab="Presidents")
+axis(1,at=c(1,2,3),labels = c("Carter","Reagan","Bush"))
+axis(2)
+box()
+```
+
+#### #4
+```{r}
+plot(y=drugCoverage$drugsmedia,x=drugCoverage$unemploy,ylab="Drug-Related Stories",xlab="National Unemployment Rate (%)")
+```
+
+#### #5
+
+##### a.
+```{r}
+sum(is.na(drugCoverage$drugsmedia))
+```
+
+##### b.
+```{r}
+mean(drugCoverage$drugsmedia)
+median(drugCoverage$drugsmedia)
+```
+This variable is right-skewed because the mean is greater than the median.
+
+
+##### c.
+```{r}
+IQR(drugCoverage$drugsmedia)
+```
+
+##### d.
+```{r}
+drugCoverage.2 <- subset(drugCoverage,drugCoverage$rwr86<1&drugCoverage$ghwb89<1)
+aggregate(x=drugCoverage.2$drugsmedia,by=list(drugCoverage.2$Year.pres),FUN=mean)
+```
+
+##### e.
+```{r}
+var(drugCoverage$drugsmedia)
+sd(drugCoverage$drugsmedia)
+mad(drugCoverage$drugsmedia)
+```
+
+#### #6
+```{r}
+max(drugCoverage$drugsmedia)
+```
+
+#### #7
+```{r}
+table(drugCoverage$unemploy)
+which.max(table(drugCoverage$unemploy))
+```
+The modal value is 7.2%.
+
+
+#### #8
+```{r}
+quantile(drugCoverage$approval[1:48],c(.1,.9))
+quantile(drugCoverage$approval[49:144],c(.1,.9))
+quantile(drugCoverage$approval[145:192],c(.1,.9))
+```

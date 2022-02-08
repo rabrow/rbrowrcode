@@ -1,0 +1,54 @@
+---
+title: 'Problem Set #1'
+author: "Rachel Brow"
+date: "9/6/2020"
+output: html_document
+---
+## Question 1:
+
+Causal theory: Women political leaders are more likely than men political leaders to engage in and maintain diplomatic relations due to higher empathy and conscientiousness.
+
+Hypothesis: Women political leaders initiate more diplomatic visits to    foreign nations than men political leaders.
+  
+Possible Empirical Test: Compare women and men leaders of similar power and influence (e.g. both advanced democracies in the OECD) on the average number of initiated diplomatic visits per year. 
+
+## 1.6 Practice Problems
+
+#### 1:
+
+```{r, echo = TRUE, eval = T,warning=FALSE}
+ -7*2^3
+ 8/(8^2+1)
+cos(pi)
+sqrt(81)
+log10(exp(4))
+```
+
+
+#### 2:
+
+The command cor calculates the correlation coefficient of x and y if they are vectors.
+
+
+#### 3:
+
+The command runif generates random deviates from a uniform distribution on an interval from min to max.
+
+
+#### 4:
+
+```{r, echo=T, results='hide', warning=F}
+x <- rnorm(1000)
+y <- rnorm(1000)
+cor(x,y)
+```
+```{r, echo=FALSE, warning=FALSE}
+cat("The correlation coefficient of vectors x and y is", cor(x,y), "\n")
+```
+
+
+#### 5:
+
+The package stringr has four main functions: character manipulation, whitespace tools, locale-sensitive operations, and pattern matching. I might want to use this package when creating an RMarkdown file, because I can manipulate the whitespace to format and organize the document.
+
+

@@ -1,0 +1,23 @@
+---
+title: 'Quiz #2'
+author: "Rachel Brow"
+date: "9/15/2020"
+output: html_document
+---
+```{r setup}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+#### Question 1
+```{r}
+library("foreign")
+hanmerKalkanANES <- read.dta("RawData/hanmerKalkanANES.dta",convert.factors = TRUE)
+table(hanmerKalkanANES$ideol7b)
+```
+
+#### Question 2
+```{r}
+library(car)
+hanmerKalkanANES$ideol7b<-as.numeric(hanmerKalkanANES$ideol7b)
+hanmerKalkanANES$ideol7b.ideo3 <- recode(hanmerKalkanANES$ideol7b, "1:3='Liberal';4='Moderate';5:7='Conservative'")
+table(hanmerKalkanANES$ideol7b.ideo3, hanmerKalkanANES$presvote)
+```

@@ -1,0 +1,56 @@
+---
+title: 'Quiz #7'
+author: "Rachel Brow"
+date: "11/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '~/Dropbox/PSCI338')
+```
+
+### Question #1
+```{r}
+library("foreign")
+library(car)
+library(lmtest)
+library(sandwich)
+Kaiser <- read.dta("RawData/31117492.DTA",convert.factors = TRUE)
+```
+
+```{r}
+#Creating binary Pres approval
+Kaiser$presapp <- NA
+Kaiser$presapp[Kaiser$trumpapp == "Strongly approve"] = 1
+Kaiser$presapp[Kaiser$trumpapp == "Somewhat approve"] = 1
+Kaiser$presapp[Kaiser$trumpapp == "Somewhat disapprove"] = 0
+Kaiser$presapp[Kaiser$trumpapp == "Strongly disapprove"] = 0
+Kaiser$presapp[Kaiser$trumpapp == "Don't know"] = NA
+Kaiser$presapp[Kaiser$trumpapp == "Refused"] = NA
+```
+
+```{r}
+linMod <- lm(presapp~rsex+RECAGE5+racethn,data=Kaiser)
+summary(linMod)
+coeftest(linMod, vcov = vcovHC(linMod, type="HC1"))
+```
+
+```{r}
+#Male: Highest approval
+linMod1 <- lm(presapp~rsex,data=Kaiser)
+Kaiser$rsex.num <- as.numeric(Kaiser$rsex)
+newdata1 = Kaiser[which(Kaiser$rsex.num == 1), ]
+fit1 = predict(linMod1, newdata = newdata1)
+summary(fit1)[4]
+```
+Males were the most likely to approve of President Trump, at 48.39 predicted value. Males are generally more likely to support Trump/Republicans compared to females/other. 
+Although the "Refused" category for sex was the highest approval (at 1), it was an outlier because only one person refused to tell their sex.
+```{r}
+#BLACK, NON-HISPANIC: Lowest approval
+linMod3 <- lm(presapp~racethn,data=Kaiser)
+Kaiser$racethn.num <- as.numeric(Kaiser$racethn)
+newdata4 = Kaiser[which(Kaiser$racethn.num == 2), ]
+fit4 = predict(linMod3, newdata = newdata4)
+summary(fit4)[4]
+```
+Black, non-Hispanics were the least likely to approve of President Trump, at 12.25 predicted value. This makes sense, as President Trump/Republicans are the least popular among black Americans compared to other racial groups.

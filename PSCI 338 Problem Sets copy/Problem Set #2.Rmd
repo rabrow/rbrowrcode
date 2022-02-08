@@ -1,0 +1,85 @@
+---
+title: 'Problem Set #2'
+author: "Rachel Brow"
+date: "9/12/2020"
+output: html_document
+---
+
+
+## Question 1
+Causal Theory: Access to arms promotes violent crime.
+
+Hypothesis: A greater access to firearms leads to an increase in violence, especially in areas with higher levels of instability like the U.S.-Mexico border. 
+
+Empirical Test: The researchers focused specifically on the 2004 expiration of the U.S. Federal Assault Weapons Ban and studied levels of homicide in municipalities of Mexico near the U.S.-Mexico Border.
+
+Maintained assumptions: Guns are the most likely weapon in homicides and violent crimes. 
+
+Measurement assumptions: violence= gun homicides
+ports of entry on border= 2 border crossings > 20 miles apart
+
+
+## 2.6 Practice Problems
+
+##### #1
+```{r, include=FALSE}
+library("foreign")
+library(car)
+hanmerKalkanANES <- read.dta("RawData/hanmerKalkanANES.dta")
+```
+
+```{r}
+# a.
+ls(hanmerKalkanANES)
+```
+
+```{r}
+# b.
+head(hanmerKalkanANES)
+```
+
+```{r}
+# c.
+fix(hanmerKalkanANES)
+```
+
+##### #2
+```{r}
+summary(hanmerKalkanANES)
+```
+You can learn the mean, median, and quartiles of each variable in the data set. There are 617 missing observations. 
+
+##### #3
+```{r}
+# a.
+hanmerKalkanANES.trim <- na.omit(hanmerKalkanANES)
+summary(hanmerKalkanANES.trim)
+```
+383 observations remain.
+
+```{r}
+# b.
+hanmerKalkanANES.subset1 <- subset(hanmerKalkanANES, select = c(caseid, retecon, bushiraq))
+summary(hanmerKalkanANES.subset1)
+```
+
+##### #4
+```{r}
+# a.
+hanmerKalkanANES$partyid.dem <- as.numeric(hanmerKalkanANES$partyid<3)
+summary(hanmerKalkanANES$partyid.dem)
+hanmerKalkanANES$partyid.rep <- as.numeric(hanmerKalkanANES$partyid>3)
+summary(hanmerKalkanANES$partyid.rep)
+```
+
+```{r}
+# b.
+hanmerKalkanANES$age <- (hanmerKalkanANES$age)^2
+summary(hanmerKalkanANES$age)
+```
+
+```{r}
+# c. 
+hanmerKalkanANES$income.one <- recode(hanmerKalkanANES$income, "1:12=1;13:17=2;18:20=3;21:23=4")
+table(hanmerKalkanANES$income.one)
+```
